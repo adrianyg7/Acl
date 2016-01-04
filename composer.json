@@ -17,6 +17,9 @@
         "illuminate/contracts": ">=5.1.11",
     },
     "autoload": {
+        "classmap": [
+            "src/database/seeds"
+        ],
         "psr-4": {
             "Adrianyg7\\Acl\\": "src/"
         }

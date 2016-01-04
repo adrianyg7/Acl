@@ -21,7 +21,12 @@ return [
      * The excepted routes in Acl.
      */
     'except' => [
-        'admin.dashboard'
+        'admin.dashboard',
     ],
+
+    /**
+     * Unauthorized message.
+     */
+    'unauthorized_message' => 'No autorizado.',
     
 ];

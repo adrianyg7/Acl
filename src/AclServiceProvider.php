@@ -24,34 +24,12 @@ class AclServiceProvider extends ServiceProvider
 
         $config = $this->app['config']->get('acl');
 
-        $except = array_get($config, 'except');
-        $userModel = array_get($config, 'user');
-        $roleModel = array_get($config, 'role');
-        $permissionModel = array_get($config, 'permission');
+        $this->registerAclExceptions($config);
+        $this->registerModels($config);
 
-        AclPolicy::setExcept($except);
+        $this->app->bind(PermissionRepositoryInterface::class, function ($app) use ($config) {
+            $permissionModel = array_get($config, 'permission');
 
-        if (class_exists($userModel) && method_exists($userModel, 'setRoleModel')) {
-            forward_static_call_array([$userModel, 'setRoleModel'], [$roleModel]);
-        }
-
-        if (class_exists($userModel) && method_exists($userModel, 'setPermissionModel')) {
-            forward_static_call_array([$userModel, 'setPermissionModel'], [$permissionModel]);
-        }
-
-        if (class_exists($roleModel) && method_exists($roleModel, 'setUserModel')) {
-            forward_static_call_array([$roleModel, 'setUserModel'], [$userModel]);
-        }
-
-        if (class_exists($roleModel) && method_exists($roleModel, 'setPermissionModel')) {
-            forward_static_call_array([$roleModel, 'setPermissionModel'], [$permissionModel]);
-        }
-
-        if (class_exists($permissionModel) && method_exists($permissionModel, 'setRolesModel')) {
-            forward_static_call_array([$permissionModel, 'setRolesModel'], [$roleModel]);
-        }
-
-        $this->app->bind(PermissionRepositoryInterface::class, function ($app) use ($permissionModel) {
             return new PermissionRepository($permissionModel);
         });
 
@@ -74,8 +52,54 @@ class AclServiceProvider extends ServiceProvider
         ], 'config');
 
         $this->publishes([
-            __DIR__ . '/migrations' => database_path('migrations')
+            __DIR__ . '/database/migrations' => database_path('migrations')
         ], 'migrations');
+    }
+
+    /**
+     * Registers the Acl exception routes.
+     *
+     * @param  array $config
+     * @return void
+     */
+    public function registerAclExceptions($config)
+    {
+        $except = array_get($config, 'except');
+
+        AclPolicy::setExcept($except);
+    }
+
+    /**
+     * Registers the models from config.
+     *
+     * @param  array $config
+     * @return void
+     */
+    public function registerModels($config)
+    {
+        $userModel = array_get($config, 'user');
+        $roleModel = array_get($config, 'role');
+        $permissionModel = array_get($config, 'permission');
+
+        if (class_exists($userModel) && method_exists($userModel, 'setRoleModel')) {
+            forward_static_call_array([$userModel, 'setRoleModel'], [$roleModel]);
+        }
+
+        if (class_exists($userModel) && method_exists($userModel, 'setPermissionModel')) {
+            forward_static_call_array([$userModel, 'setPermissionModel'], [$permissionModel]);
+        }
+
+        if (class_exists($roleModel) && method_exists($roleModel, 'setUserModel')) {
+            forward_static_call_array([$roleModel, 'setUserModel'], [$userModel]);
+        }
+
+        if (class_exists($roleModel) && method_exists($roleModel, 'setPermissionModel')) {
+            forward_static_call_array([$roleModel, 'setPermissionModel'], [$permissionModel]);
+        }
+
+        if (class_exists($permissionModel) && method_exists($permissionModel, 'setRolesModel')) {
+            forward_static_call_array([$permissionModel, 'setRolesModel'], [$roleModel]);
+        }
     }
 
     /**
