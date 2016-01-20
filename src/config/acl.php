@@ -18,6 +18,11 @@ return [
     'permission' => 'Adrianyg7\Acl\Permissions\Permission',
 
     /**
+     * Unauthorized message.
+     */
+    'unauthorized_message' => 'Unauthorized',
+
+    /**
      * The excepted routes in Acl.
      */
     'except' => [
@@ -25,8 +30,17 @@ return [
     ],
 
     /**
-     * Unauthorized message.
+     * The additional permissions to register in Acl.
      */
-    'unauthorized_message' => 'No autorizado.',
+    'additional' => [
+        'admin.users.show-all' => 'Show any user profile.',
+    ],
+
+    /**
+     * Description of permissions in Acl.
+     */
+    'permission_placeholders' => [
+        'admin.users.index' => 'Users list.'
+    ],
     
 ];

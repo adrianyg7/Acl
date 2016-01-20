@@ -70,11 +70,11 @@ class RegisterPermissions extends Command
      */
     public function handle()
     {
-        foreach ($this->routesToRegister() as $route) {
+        foreach ($this->permissionsToRegister() as $name => $description) {
             $this->permissionRepository->firstOrRegister([
-                'name' => $route->getName(),
+                'name' => $name,
             ], [
-                'description' => $route->getName(),
+                'description' => $description,
             ]);
         }
 
@@ -82,14 +82,29 @@ class RegisterPermissions extends Command
     }
 
     /**
-     * Retreives the routes to be registered.
+     * Retreives the permissions to be registered.
      *
-     * @return \Illuminate\Support\Collection
+     * @return array
      */
-    public function routesToRegister()
+    public function permissionsToRegister()
     {
-        return array_filter($this->router->getRoutes()->getRoutes(), function ($route) {
+        $config = config('acl');
+        $permissionPlaceholders = array_get($config, 'permission_placeholders');
+        $additionalPermissions = array_get($config, 'additional');
+        $permissionsToRegister = [];
+
+        $routes = array_filter($this->router->getRoutes()->getRoutes(), function ($route) {
             return $route->getName() and ! in_array($route->getName(), AclPolicy::getExcept());
         });
+
+        foreach ($routes as $route) {
+            if (array_key_exists($route->getName(), $permissionPlaceholders)) {
+                $permissionsToRegister[$route->getName()] = $permissionPlaceholders[$route->getName()];
+            } else {
+                $permissionsToRegister[$route->getName()] = $route->getName();
+            }
+        }
+
+        return array_merge($permissionsToRegister, $additionalPermissions);
     }
 }
